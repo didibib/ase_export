@@ -1,31 +1,39 @@
 import bpy
 import bpy_extras
-from bpy.props import StringProperty, FloatProperty, EnumProperty, BoolProperty
+from bpy.props import StringProperty, EnumProperty, BoolProperty
+import os
 from .builder import *
 from .writer import *
 
-
 class ASE_OT_ExportOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper):
-    bl_idname = 'io_scene_ase.ase_export'  # important since its how bpy.ops.import_test.some_data is constructed
+    bl_idname = 'io_scene_ase.ase_export'
     bl_label = 'Export ASE'
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     filename_ext = '.ase'
+
     filter_glob: StringProperty(
         default="*.ase",
         options={'HIDDEN'},
-        maxlen=255,  # Max internal buffer length, longer would be hilighted.
+        maxlen=255,  # Max internal buffer length, longer would be highlighted.
     )
+
     units: EnumProperty(
-        default='U',
+        default='M',
         items=(('M', 'Meters', ''),
                ('U', 'Unreal', '')),
         name='Units'
     )
+
     use_raw_mesh_data: BoolProperty(
         default=False,
         description='No modifiers will be evaluated as part of the exported mesh',
         name='Raw Mesh Data')
+    
+    combine_meshes: BoolProperty(
+        default=False,
+        name='Combine Meshes')
+
     units_scale = {
         'M': 60.352,
         'U': 1.0
@@ -35,16 +43,21 @@ class ASE_OT_ExportOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper
         layout = self.layout
         layout.prop(self, 'units', expand=False)
         layout.prop(self, 'use_raw_mesh_data')
+        layout.prop(self, 'combine_meshes')
 
     def execute(self, context):
         options = ASEBuilderOptions()
         options.scale = self.units_scale[self.units]
         options.use_raw_mesh_data = self.use_raw_mesh_data
-        try:
-            ase = ASEBuilder().build(context, options)
+        dir_path = os.path.dirname(self.filepath)
+        
+        ase = ASE()
+        for obj in context.selected_objects:            
+            ASEBuilder().build(context, options, obj, ase)
+            if not self.combine_meshes:
+                ASEWriter().write(dir_path + '\\' + obj.name + self.filename_ext, ase)
+                ase = ASE()
+        if self.combine_meshes:
             ASEWriter().write(self.filepath, ase)
-            self.report({'INFO'}, 'ASE exported successful')
-            return {'FINISHED'}
-        except ASEBuilderError as e:
-            self.report({'ERROR'}, str(e))
-            return {'CANCELLED'}
+        self.report({'INFO'}, 'ASE exported successfully')
+        return {'FINISHED'}
