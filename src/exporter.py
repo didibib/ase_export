@@ -35,7 +35,7 @@ class ASE_OT_ExportOperator(bpy.types.Operator, bpy_extras.io_utils.ExportHelper
         name='Combine Meshes')
 
     units_scale = {
-        'M': 60.352,
+        'M': 100.0,
         'U': 1.0
     }
 

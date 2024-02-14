@@ -16,7 +16,7 @@ class ASEBuilderOptions(object):
 
 
 class ASEBuilder(object):
-    def build(self, context, options: ASEBuilderOptions, object : bpy.types.Object, ase: ASE):
+    def build(self, context, options: ASEBuilderOptions, object: bpy.types.Object, ase: ASE):
         main_geometry_object = None
         if object is None or object.type != 'MESH':
             return
