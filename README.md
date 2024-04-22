@@ -6,3 +6,7 @@ Check out [this video](https://www.youtube.com/watch?v=gpmBxCGHQjU) on how to in
 
 Resources:
 * https://wiki.beyondunreal.com/Legacy:ASE_File_Format
+
+# About This Fork
+
+This fork enables the separate export of objects.
